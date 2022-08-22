@@ -60,6 +60,8 @@ exports.handler = async (event) => {
             Items['split_time'] = {N: '' + body[key]};
         } else if (key === 'value') {
             Items[key] = {N: '' + body[key]};
+        } else if (key === 'properties') {
+            Items[key] = {S: JSON.stringify(body[key])};
         } else {
             Items[key] = {S: body[key]};
         }

@@ -1,0 +1,93 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>	
+		<script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>  
+		<script src="//cdn.split.io/sdk/split-10.21.1.min.js"></script>
+		<title>Atwood Example App</title>
+
+		<script>
+			const startTimeInMillis = new Date().getTime();
+
+			const factory = splitio({
+			  core: {
+			    authorizationKey: '70jiipvg64kkvds3ar48sf0ugrptgvpqts8d',
+			    key: 'atwood_id' // unique identifier for your user
+			  },
+			  impressionListener: {
+			  	logImpression: logImpression
+			  }
+			});
+
+			const client = factory.client();
+
+			client.on(client.Event.SDK_UPDATE, function() {
+
+			  setInterval(() => {
+				  const treatment = client.getTreatment('atwood');
+				  const span = document.getElementById("toggle_span");
+				  span.innerHTML = treatment;
+			  }, 5000);
+			});
+
+			function logImpression(data) {
+				console.log(data);
+				console.log(data.impression.treatment);
+
+				const latency = new Date().getTime() - startTimeInMillis;
+				if(data.impression.treatment === "on") {
+					latency += 1000;
+				}
+
+				const props = {
+					device: 'chrome',
+					source: 'atwood'
+				}
+
+				track(
+					data.impression.keyName, 
+					data.impression.feature,
+					data.impression.time,
+					data.impression.treatment,
+					'page_latency_ms',
+					'user',
+					latency,
+					props);
+			}
+
+			function track(key, feature, time, treatment, eventTypeId, trafficTypeName, value, properties) {
+
+				const url = 'https://xkh7626hm7tcbv6vh32oly2yle0xwtkl.lambda-url.us-west-2.on.aws/';
+
+				const body = {
+					key: key,
+					split: feature,
+					time: time,
+					treatment: treatment,
+					eventTypeId: eventTypeId,
+					trafficTypeName: trafficTypeName,
+					value: value,
+					properties: properties
+				}
+
+				axios({
+					method: 'post',
+					data: body,
+					url: url,
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				}).then(function (response) {
+					console.log(response);
+				}).catch(function (error) {
+					console.log(error);
+				});
+
+			}
+
+		</script>
+	</head>
+	<body>
+		<div>ATWOOD IS <span id="toggle_span">placeholder</span></div>
+	</body>
+<html>
