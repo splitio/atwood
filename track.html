@@ -7,6 +7,10 @@
 		<title>Atwood Example App</title>
 
 		<script>
+			function getRandomInt(max) {
+			  return Math.floor(Math.random() * max);
+			}
+
 			const startTimeInMillis = new Date().getTime();
 
 			const factory = splitio({
@@ -31,10 +35,10 @@
 			});
 
 			function logImpression(data) {
-				// console.log(data);
+				console.log('logImpression!');
 				console.log(data.impression.treatment);
 
-				const latency = new Date().getTime() - startTimeInMillis;
+				let latency = 1000 + getRandomInt(1000);
 				if(data.impression.treatment === "on") {
 					latency += 1000;
 				}

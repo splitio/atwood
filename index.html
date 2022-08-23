@@ -1,0 +1,106 @@
+<html>
+	<head>
+		<script src='https://cdn.plot.ly/plotly-2.14.0.min.js'></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>	
+
+		<title>Atwood Dashboard</title>
+		<script>
+			$(() => {
+			    console.log( "ready!" );
+			    
+			    draw();
+
+			    setInterval(() => {
+				    draw();
+			    }, 5000);
+			});
+
+			function draw() {
+				console.log('draw!');
+
+				const url = 'https://gj5zy66fxhxiqg2jl42fniwkbe0uzzpg.lambda-url.us-west-2.on.aws/?eventTypeId=page_latency_ms&last=30&unit_of_time=m';
+
+				let treatments = [];
+				let traces = [];
+				let data = [];
+				axios({
+					method: 'get',
+					url: url,
+					headers:{
+						'Content-Type': 'application/json'
+					}
+				}).then(function (response) {
+					// console.log(response);
+					for(const ie of response.data) {
+						// console.log(ie);
+						if(!treatments[ie.treatment]) {
+							treatments[ie.treatment] = [];
+						}
+						treatments[ie.treatment].push({'time': ie.time, 'value': ie.value});
+					}
+				}).catch(function (error) {
+					console.log(error);
+				}).finally(() => {
+					Object.keys(treatments).forEach((key) => {
+						for(const o of treatments[key]) {
+							// console.log(key + ' - ' + JSON.stringify(o));
+							if(!traces[key]) {
+								traces[key] = [];
+							}
+							if(!traces[key]['x']) {
+								traces[key]['x'] = [];
+							}
+							traces[key]['x'].push(new Date(o.time).toISOString());
+							if(!traces[key]['y']) {
+								traces[key]['y'] = [];
+							}
+							traces[key]['y'].push(o.value);
+						}
+						traces[key].type = 'scatter';
+						traces[key].mode = 'markers';
+						traces[key].connectgaps = false;
+						traces[key].name = key;
+						if(key === "on") {
+							const line = {
+								color: 'rgb(0, 124, 156)',
+								width: 3								
+							}
+							traces[key].line = line;
+						} else if (key === "off") {
+							const line = {
+								color: 'rgb(255, 70, 82)',
+								width: 3
+							}
+							traces[key].line = line;
+						}
+						console.log(traces[key]);
+						data.push(traces[key]);
+					});
+
+					console.log(JSON.stringify(data));
+
+					var layout = {
+					  autosize: false,
+					  width: 1200,
+					  height: 950,
+					  margin: {
+					    l: 50,
+					    r: 50,
+					    b: 100,
+					    t: 100,
+					    pad: 4
+					  },
+					  paper_bgcolor: '#aaaaaa',
+					  plot_bgcolor: '#eeeeee'
+					};					
+					Plotly.newPlot('myDiv', data, layout);
+				});
+
+			}
+		</script>
+	</head>
+	<body>
+		<div id="myDiv"></div>		
+	</body>
+</html>
