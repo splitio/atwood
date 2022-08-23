@@ -3,9 +3,23 @@
 		<script src='https://cdn.plot.ly/plotly-2.14.0.min.js'></script>
 		<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>	
+	    <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
 
 		<title>Atwood Dashboard</title>
 		<script>
+
+			let last = 20;
+			let unit_of_time = 'm';
+			let pvalue = NaN;
+
+			function changeQuery() {
+				const l = document.getElementById("last").value;
+				const u = document.getElementById("unit_of_time").value;
+
+				last = l;
+				unit_of_time = u;
+			}
+
 			$(() => {
 			    console.log( "ready!" );
 			    
@@ -19,11 +33,13 @@
 			function draw() {
 				console.log('draw!');
 
-				const url = 'https://gj5zy66fxhxiqg2jl42fniwkbe0uzzpg.lambda-url.us-west-2.on.aws/?eventTypeId=page_latency_ms&last=30&unit_of_time=m';
+				const url = 'https://gj5zy66fxhxiqg2jl42fniwkbe0uzzpg.lambda-url.us-west-2.on.aws/?eventTypeId=page_latency_ms&last=' + last + '&unit_of_time=' + unit_of_time;
 
 				let treatments = [];
 				let traces = [];
 				let data = [];
+				let on = [];
+				let off = [];
 				axios({
 					method: 'get',
 					url: url,
@@ -56,6 +72,11 @@
 								traces[key]['y'] = [];
 							}
 							traces[key]['y'].push(o.value);
+							if(key === "on") {
+								on.push(o.value);
+							} else if (key === "off") {
+								off.push(o.value);
+							}
 						}
 						traces[key].type = 'scatter';
 						traces[key].mode = 'markers';
@@ -78,12 +99,54 @@
 						data.push(traces[key]);
 					});
 
-					console.log(JSON.stringify(data));
+					let sumOn = 0;
+					for(const value of on) {
+						sumOn += value;
+					}
+					console.log('sumOn: ' + sumOn);
+
+					let sumOff = 0;
+					for(const value of off) {
+						sumOff += value;
+					}
+					console.log('sumOff: ' + sumOff);
+
+					let sumOnSquared = sumOn * sumOn;
+					let sumOffSquared = sumOff * sumOff;
+
+					let sumOfOnSquares = 0;
+					for(const value of on) {
+						sumOfOnSquares += value * value;
+					}
+
+					let sumOfOffSquares = 0;
+					for(const value of off) {
+						sumOfOffSquares += value * value;
+					}
+					console.log('sumOfOnSquares: ' + sumOfOnSquares);
+					console.log('sumOfOffSquares:' + sumOfOffSquares);
+
+					let muOn = sumOn / on.length;
+					let muOff = sumOff / off.length;
+
+					console.log('muOn: ' + muOn);
+					console.log('muOff: ' + muOff);
+
+					let df = (on.length - 1) + (off.length - 1);
+					console.log('df: ' + df);
+
+					let t = (muOn - muOff) / Math.sqrt(((1/on.length) + (1/off.length)) * (sumOfOnSquares - (sumOn*sumOn/on.length)) + (sumOfOffSquares - (sumOff * sumOff / off.length)) * 1 / df);
+					console.log('t: ' + t);
+
+
+					pvalue = jStat.ttest(t, 2);
+
+					document.getElementById("pvalue").value = pvalue;
 
 					var layout = {
 					  autosize: false,
 					  width: 1200,
-					  height: 950,
+					  height: 900,
 					  margin: {
 					    l: 50,
 					    r: 50,
@@ -101,6 +164,25 @@
 		</script>
 	</head>
 	<body>
-		<div id="myDiv"></div>		
+		<div id="myDiv"></div>	
+		<table>
+			<tr>
+				<td>Last</td>
+				<td><input size="2" type="text" id="last" value="20"/></td>
+				<td>
+					<select name="unit" id="unit_of_time">
+						<option default value="m">minutes</option>
+						<option value="h">hours</option>
+						<option value="d">days</option>
+					</select>
+				</td>
+				<td></td>
+				<td><input type="submit" value="change query" id="changeQuery" onclick="changeQuery()"/></td>
+				<td>p-value</td>
+				<td>
+					<input type="button" id="pvalue" value="NaN"/>
+				</td>
+			</tr>
+		</table>		
 	</body>
 </html>
