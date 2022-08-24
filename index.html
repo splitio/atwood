@@ -138,7 +138,6 @@
 					let t = (muOn - muOff) / Math.sqrt(((1/on.length) + (1/off.length)) * (sumOfOnSquares - (sumOn*sumOn/on.length)) + (sumOfOffSquares - (sumOff * sumOff / off.length)) * 1 / df);
 					console.log('t: ' + t);
 
-
 					pvalue = jStat.ttest(t, 2);
 
 					document.getElementById("pvalue").value = pvalue;

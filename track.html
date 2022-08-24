@@ -25,23 +25,38 @@
 
 			const client = factory.client();
 
+			client.on(client.Event.SDK_READY, function() {
+				  const treatment = client.getTreatment('atwood');
+				  const span = document.getElementById("toggle_span");
+				  span.innerHTML = treatment;
+				});
+
 			client.on(client.Event.SDK_UPDATE, function() {
 
 			  setInterval(() => {
 				  const treatment = client.getTreatment('atwood');
 				  const span = document.getElementById("toggle_span");
 				  span.innerHTML = treatment;
-			  }, 5000);
+			  }, 1000);
 			});
 
+			let counter = new Date().getTime();
 			function logImpression(data) {
 				console.log('logImpression!');
 				console.log(data.impression.treatment);
 
-				let latency = 1000 + getRandomInt(1000);
+				let latency = Math.sin((counter++ % 360) * Math.PI / 180);
 				if(data.impression.treatment === "on") {
-					latency += 1000;
+					latency = Math.cos((counter % 360) * Math.PI / 180);
+					latency += 1;
 				}
+				latency *= 100;
+
+				console.log('latency: ' + latency);
+				// let latency = 1000 + getRandomInt(1000);
+				// if(data.impression.treatment === "on") {
+				// 	latency += 1000;
+				// }
 
 				const props = {
 					device: 'chrome',
