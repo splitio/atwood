@@ -11,13 +11,16 @@
 			let last = 20;
 			let unit_of_time = 'm';
 			let pvalue = NaN;
+			let eventTypeId = "page_latency_ms";
 
 			function changeQuery() {
 				const l = document.getElementById("last").value;
 				const u = document.getElementById("unit_of_time").value;
+				const e = document.getElementById("eventTypeId").value;
 
 				last = l;
 				unit_of_time = u;
+				eventTypeId = e;
 			}
 
 			$(() => {
@@ -33,7 +36,7 @@
 			function draw() {
 				console.log('draw!');
 
-				const url = 'https://gj5zy66fxhxiqg2jl42fniwkbe0uzzpg.lambda-url.us-west-2.on.aws/?eventTypeId=page_latency_ms&last=' + last + '&unit_of_time=' + unit_of_time;
+				const url = 'https://gj5zy66fxhxiqg2jl42fniwkbe0uzzpg.lambda-url.us-west-2.on.aws/?eventTypeId=' + eventTypeId + '&last=' + last + '&unit_of_time=' + unit_of_time;
 
 				let treatments = [];
 				let traces = [];
@@ -163,9 +166,18 @@
 		</script>
 	</head>
 	<body>
+		<p>Page Latency (ms)</p>
 		<div id="myDiv"></div>	
 		<table>
 			<tr>
+				<td>Metric</td>
+				<td>
+					<select name="eventTypeId" id="eventTypeId">
+						<option default value="page_latency_ms">page_latency_ms</option>
+						<option value="onboarding_completion_time_ms">onboarding_completion_time_ms</option>
+						<option value="clicks_to_adopt">clicks_to_adopt</option>
+					</select>
+				</td>
 				<td>Last</td>
 				<td><input size="2" type="text" id="last" value="20"/></td>
 				<td>
