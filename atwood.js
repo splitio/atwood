@@ -81,7 +81,7 @@ client.on(client.Event.SDK_READY, () => {
 			offValue,
 			props);
 
-		onValue = 100 + nextRandomInt();
+		onValue = 200 + nextRandomInt();
 		offValue = 50 + nextRandomInt();
 
 		track(
