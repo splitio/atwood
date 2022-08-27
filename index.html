@@ -45,6 +45,7 @@
 		</style>
 
 		<script>
+			setEventTypeIds();
 
 			let last = 20;
 			let unit_of_time = 'm';
@@ -72,6 +73,37 @@
 				    draw();
 			    }, 5000);
 			});
+
+
+			function setEventTypeIds() {
+				console.log('getEventTypeIds');
+				let results = [];
+
+				const url = 'https://xp3w7nllr3sodhhtqhzqp2oswq0qaxgd.lambda-url.us-west-2.on.aws/'
+
+				let eventTypeIds = [];
+
+				axios({
+					method: 'get',
+					url: url
+				}).then((response) => {
+					console.log(response);
+					for(const eventTypeId of response.data) {
+						results.push(eventTypeId);
+					}
+					console.log(results);
+				}).catch((error) => {
+					console.log(error);
+				}).finally (() => {
+					let options = '';
+					for(const eventTypeId of results) {
+						options += '<option value="' + eventTypeId + '">'+ eventTypeId + '</option>';
+					}					
+					document.getElementById('eventTypeId').innerHTML = options;
+				});
+
+				return results;
+			}
 
 			function draw() {
 				console.log('draw!');
@@ -202,7 +234,7 @@
 					Plotly.newPlot('myDiv', data, layout).then(() => {
 						$('#myDiv').show();
 						$('#spinner').hide();
-					})
+					});
 				});
 
 			}
